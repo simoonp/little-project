@@ -105,4 +105,20 @@ $ git log --pretty=short
 
 #显示指定目录/文件的日志
 $ git log 文件名/目录名
+
+# 显示文件的改动
+$ git log -p
+# 每行数据前的 + 表示新添加的行，- 表示删除的行
+
+# 查看指定文件的改动
+$ git log -p README.md
 ```
+
+*注：由于文件名中带中文会显示文件名乱码，使用 git config --global core.quotepath false 指令可以解决这个问题*
+
+- git diff——查看更改前后的差别
+```shell
+$ git diff
+# 可以查看当前工作树与暂存区中数据的差别
+```
+
