@@ -41,6 +41,8 @@ $ ssh-**key**gen -t rsa -b 4096 -C "github邮箱"
 
 在 git push origin main 时使用token
 
+*注：GitHub的没人分支名以改为main，而不是原来的master，可以使用git branch查看分支*
+
 ![Image](https://raw.githubusercontent.com/simoonp/picture/main/git_picture/set7.png)
 
 - 设置免密push
@@ -120,5 +122,17 @@ $ git log -p README.md
 ```shell
 $ git diff
 # 可以查看当前工作树与暂存区中数据的差别
+
+# 查看与最新提交的差别
+$ git diff HEAD
 ```
+# 分支操作
+
+- git branch——显示分支一览表
+```shell
+$ git branch
+# git branch命令可以将分支名列表显示，同时可以确认当前所在分支
+```
+
+
 
