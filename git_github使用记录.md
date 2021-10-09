@@ -78,7 +78,7 @@ git push origin main
 
 ![Image](https://raw.githubusercontent.com/simoonp/picture/main/git_picture/push1.png)
 
-# git 基本操作
+## git 基本操作
 - git status——查看仓库的状态
 
 - git add——向暂存区中添加文件
@@ -126,7 +126,7 @@ $ git diff
 # 查看与最新提交的差别
 $ git diff HEAD
 ```
-# 分支操作
+## 分支操作
 
 - git branch——显示分支一览表
 ```shell
