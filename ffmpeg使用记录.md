@@ -10,6 +10,11 @@
 
 ## 相关操作
 
+- 查看视频属性
+
+```shell
+ffmpeg -i video.mp4
+```
 - 转码
 
 ```shell
@@ -46,3 +51,16 @@ ffmpeg -r 8 -i out_%d.jpg outc.gif
  -r 8 设置帧率为8帧
  
  %d为通配符，我需要合成的图片有8张
+
+ - 提取音频
+
+```shell
+$ ffmpeg -i video.mp4 -c:a copy audio.aac
+```
+此处的 -c:a 表示音频流；视频流 -c:v 与字幕流 -c:s 自然也类似。 注意：如果音频流与容器冲突时，你需要将 copy 改为正确的编解码器（或者删去 -c:a copy 来让 FFmpeg 自动选择），以执行重编码。
+
+- 合并音频和视频
+
+```shell
+ffmpeg -i video.mp4 -i audio.wav -c:v copy -c:a aac -strict experimental output.mp4
+```
