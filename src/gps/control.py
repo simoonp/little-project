@@ -8,6 +8,10 @@ from re import split
 import json
 import requests
 import rospy
+import time
+
+import threading
+from rospy.core import rospyinfo    #线程
 
 import tf
 from tf.transformations import *
@@ -25,6 +29,7 @@ yawdata = 0
 net_state=True  # 网络状态
 ttmcp = 0   #计次
 msg = myGPS()
+
 #获取指定地点的经纬度，输入为某个地名
 def get_location_x_y(place):
     #place = input("请输入您要查询的地址")
@@ -57,6 +62,7 @@ def convert(lng, lat):
     text = response.text 
     data = json.loads(text)
     location = data['locations']
+    # print(type(location))
 
     return location
 
@@ -87,7 +93,7 @@ def route_planning(lon1,lat1,lon2,lat2):
 
     formatted_url = url + '?' + '&'.join(["{}={}".format(k,v) for k,v in parameters.items()])  # ! # 坐标显示正常
     response = requests.get(formatted_url)
-    print(formatted_url)
+    # print(formatted_url)
     txt = json.loads(response.text)
 
     global status 
@@ -99,14 +105,11 @@ def route_planning(lon1,lat1,lon2,lat2):
         status = 0
         return 
 
-        print("第1个return已结束")
-
     elif 'route' not in txt:
         print("error")
         status = 3
         return 
 
-        print("第2个return已结束")
     else:
         txt = txt['route']['paths'][0]['steps']
         info=[]
@@ -116,7 +119,7 @@ def route_planning(lon1,lat1,lon2,lat2):
             info.append(j)
             j=j+1
             info.append(i)
-        #print("第3个return之前已结束")
+        rospy.loginfo("路径获取成功")
         status = 1
         return info
 
@@ -195,17 +198,18 @@ def isConnected():
 # 通过IMU获取偏航角
 def callbackYaw(data):
     global yawdata
-    error = 65  # 偏移量
+    error = 0  # 偏移量
     #这个函数是tf中的,可以将四元数转成欧拉角
     (r,p,y) = tf.transformations.euler_from_quaternion((data.orientation.x,data.orientation.y,data.orientation.z,data.orientation.w))
     #由于是弧度制，下面将其改成角度制看起来更方便
     #rospy.loginfo("Roll = %f, Pitch = %f, Yaw = %f",r*180/3.1415926,p*180/3.1415926,y*180/3.1415926)
-    yawdata = (0-(y*180/3.1415926 + error ))%360
-    rospy.loginfo("偏航角：%f", yawdata)
+    # yawdata = (0-(y*180/3.1415926 + error ))%360
+    yawdata = y*180/3.1415926
+    # rospy.loginfo("偏航角：%f", yawdata)
 
 # 网络检测
 def callbackNet(net):
-    rospy.loginfo("网络状态：%s", net.data)
+    # rospy.loginfo("网络状态：%s", net.data)
     status = net.data.split('-')[0]
     status = int(status)
     global net_state
@@ -225,6 +229,7 @@ def callbackGPS(gps):
     #经度longitude  纬度latitude
     the_location = convert(gps.longitude,gps.latitude)    #转换为gcj02坐标
 
+# 处理数据
 def DegDis():
     global ttmcp
     global net_state
@@ -238,6 +243,7 @@ def DegDis():
     msg.compass=yawdata
     if net_state == True:   # 网络正常
         #使用 , 分割元素
+        # print(the_location)
         longitude=the_location.split(',')[0]
         latitude=the_location.split(',')[1]
         #rospy.loginfo('Listener: GPS: %s %s', (longitude), (latitude))
@@ -268,11 +274,20 @@ def DegDis():
     elif net_state == False:
        # global yawdata
         rospy.loginfo('The network is not connected')
-        msg = myGPS()
+        # msg = myGPS()
         msg.state = 2   # 网络连接失败
         msg.deg = 0
         msg.dis = 0
             
+def callbackMag(mag):
+    # rospy.loginfo("获取磁力计数据")
+    data=mag.data
+    mx=data.split(':')[0]
+    my=data.split(':')[1]
+    mz=data.split(':')[2]
+    myaw=data.split(':')[3]
+    # print(mx,my,mz,myaw)
+
 # 监听
 def listener():
     #Subscriber函数第一个参数是topic的名称，第二个参数是接受的数据类型 第三个参数是回调函数的名称
@@ -283,15 +298,23 @@ def listener():
     """
     rospy.Subscriber('/handsfree/imu', Imu, callbackYaw, queue_size=10)
     rospy.Subscriber('/NetMonitor', String, callbackNet, queue_size=10)
-    rospy.Subscriber('/gps/fix', NavSatFix, callbackGPS, queue_size=10)   
-    rospy.spin()
+    rospy.Subscriber('/gps/fix', NavSatFix, callbackGPS, queue_size=10)
+    rospy.Subscriber('/magnetometer', String, callbackMag, queue_size=10)   
+    rospy.spin()    # 单线程情况下，程序只执行到这里，然后等待回调，要执行后面的函数需要添加另外一个线程
 
 if __name__ == '__main__':
     rospy.init_node('pylistener', anonymous=True)
     pub = rospy.Publisher('deg_dis', myGPS, queue_size=10)  #发布话题设为全局变量
     rate = rospy.Rate(1)
-    listener()
-    global msg
-    while not rospy.is_shutdown():         
+    add_thread=threading.Thread(target=listener)
+    # listener()
+
+    add_thread.start()  # 开启第二个线程
+    time.sleep( 2 ) # 等待前几个订阅的话题更新数据
+    rospy.loginfo("开启第二个线程------------------------")
+    while not rospy.is_shutdown():
+        # print(msg)   # 主函数调用全局变量不用global修饰
+        print("---while---")
+        DegDis()      
         pub.publish(msg)
         rate.sleep()
