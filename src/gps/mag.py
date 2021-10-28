@@ -27,7 +27,7 @@ def send(rev):
 
 if __name__ == '__main__':
     rospy.init_node("Mag") #初始化ros节点
-    ser = serial.Serial("/dev/ttyUSB0", 9600, timeout=1) #打开串口, 端口号:"/dev/ttyUSB0". 波特率:9600. 延时等待1s
+    ser = serial.Serial("/dev/mag", 9600, timeout=1) #打开串口, 端口号:"/dev/ttyUSB0". 波特率:9600. 延时等待1s
     if ser.isOpen(): #判断串口是否打开
         print("串口打开成功")
     else:
