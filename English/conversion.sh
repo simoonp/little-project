@@ -17,6 +17,8 @@ done
 rm mcc
 
 sed -i 's/\[31m//' $save
+sed -i 's/\[32m//' $save
+sed -i 's/\[33m//' $save
 sed -i 's/\[0m//' $save
 sed -i 's/\[36m//' $save
 sed -i 's/\[34m//' $save
