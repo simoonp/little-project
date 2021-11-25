@@ -31,9 +31,9 @@ echo "创建自定义消息"
 #echo "float64 dis" >> myGPS.msg
 #echo "uint32 compass" >> myGPS.msg
 
-cp ~/tmp/myGPS.msg .
+#cp ~/tmp/myGPS.msg .
 
-# wget https://raw.githubusercontent.com/simoonp/little-project/main/src/gps/myGPS.msg
+wget https://raw.githubusercontent.com/simoonp/little-project/main/src/gps/myGPS.msg
 cat myGPS.msg
 
 cd ~/gps_ws/src/mygps
@@ -68,17 +68,19 @@ echo "添加py脚本"
 cd ~/gps_ws/src/mygps
 mkdir scripts
 cd scripts
-#wget https://raw.githubusercontent.com/simoonp/little-project/main/src/gps/control.py
-#wget https://raw.githubusercontent.com/simoonp/little-project/main/src/gps/mag.py
-cp ~/tmp/control.py .
-cp ~/tmp/mag.py .
+wget https://raw.githubusercontent.com/simoonp/little-project/main/src/gps/control.py
+wget https://raw.githubusercontent.com/simoonp/little-project/main/src/gps/mag.py
+wget https://raw.githubusercontent.com/simoonp/little-project/main/src/gps/PID_test.py
+wget https://raw.githubusercontent.com/simoonp/little-project/main/src/gps/net.py
+#cp ~/tmp/control.py .
+#cp ~/tmp/mag.py .
 chmod u+x *.py
 
 echo "添加底层控制程序"
 cd ~/gps_ws/src/mygps
 cd src
-#wget https://raw.githubusercontent.com/simoonp/little-project/main/src/gps/ctrl.cpp
-cp ~/tmp/ctrl.cpp .
+wget https://raw.githubusercontent.com/simoonp/little-project/main/src/gps/ctrl.cpp
+#cp ~/tmp/ctrl.cpp .
 
 echo "修改CMakeLists.txt"
 cd ..
