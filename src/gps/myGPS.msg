@@ -1,4 +1,10 @@
 uint16 state
-uint32 deg
+int32 deg
 float64 dis
-int32 compass 
+int32 compass
+float64 WGS84_lon
+float64 WGS84_lat
+float64 GCJ02_lon
+float64 GCJ02_lat
+bool net_flag
+bool plan_flag
