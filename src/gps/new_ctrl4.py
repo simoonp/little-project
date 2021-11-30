@@ -157,16 +157,16 @@ def route_planning(lon1,lat1,lon2,lat2):
         # 将之前的path信息保存到其他文件中
         val = os.system("cat ~/gps_ws/src/mygps/info/wgs84file.txt >> ~/gps_ws/src/mygps/info/wgs84file.log ")
         if val != 0:
-            rospy.loginfo("保存文件错误") 
+            rospy.loginfo("wgs84file.txt 保存文件错误1") 
         val = os.system("echo \" \" >> ~/gps_ws/src/mygps/info/wgs84file.log ")
         if val != 0:
-            rospy.loginfo("保存文件错误")
-        val = os.system("cat ~/gps_ws/src/mygps/info/gcj02file.txtt >> ~/gps_ws/src/mygps/info/gcj02file.log ")   
+            rospy.loginfo("wgs84file.txt 保存文件错误2")
+        val = os.system("cat ~/gps_ws/src/mygps/info/gcj02file.txt >> ~/gps_ws/src/mygps/info/gcj02file.log ")   
         if val != 0:
-            rospy.loginfo("保存文件错误")
+            rospy.loginfo("gcj02file.txt 保存文件错误1")
         val = os.system("echo \" \" >> ~/gps_ws/src/mygps/info/gcj02file.log ")
         if val != 0:
-            rospy.loginfo("保存文件错误")
+            rospy.loginfo("gcj02file.txt 保存文件错误2")
         # ----保存文件结束---
 
         gcj02file = homepath + "/gps_ws/src/mygps/info/gcj02file.txt"
@@ -181,15 +181,14 @@ def route_planning(lon1,lat1,lon2,lat2):
         tmp_num=0
         for i in txt:
             i = i['polyline']
-
+            print("---------------")
+            print("i: ",i)
             tmp_num = tmp_num+1
             gcj02f.write(str(i))
-            
+
             tmp = i.split(';')
 
-            print("---------------")
-
-            info_tmp=[] #路径信息临时转换变量
+            info_tmp="" #路径信息临时转换变量
             k=0
             for j in tmp:                
                 # print(j)
@@ -199,9 +198,11 @@ def route_planning(lon1,lat1,lon2,lat2):
                 if k<len(tmp):
                     wgs = wgs + ";"
                 wgs84f.write(str(wgs))
-                info_tmp.append(wgs)
-                
-            info.append[info_tmp]
+                # print("for 循环中的 wgs",wgs)
+                # info_tmp.append(str(wgs))
+                info_tmp = info_tmp + str(wgs)
+            print("info_tmp", info_tmp)                
+            info.append(info_tmp)
 
             if(tmp_num < len(txt)):
                 wgs84f.write("\n")  
@@ -269,6 +270,7 @@ def datapath(info, longitude, latitude):
     global flag_i
     global path_flag
     #path=info[1].split(';') #获取第一条路径数据
+    print(info[path_flag])
     path=info[path_flag].split(';') #获取第一条路径数据
     print(path)
     data=[]
@@ -299,7 +301,7 @@ def datapath(info, longitude, latitude):
 第\033[32m%d\033[0m 个点,\
 前进的角度:\033[32m%f\033[0m距离下一个点的距离:\033[32m%f\033[0m",\
 path_flag, flag_i, degree, distance)
-
+    rospy.loginfo("目标点的经纬度是： %f ， %f", longitude, latitude)
     return data
 
 
@@ -331,8 +333,12 @@ def callbackNet(net):
 def callbackGPS(gps):
 
     global the_location
+    global msg
     #经度longitude  纬度latitude
     # 注-- 使用GPS计算角度和距离，不用 gcj02坐标
+    # 更新 GPS坐标
+    msg.WGS84_lat = float(gps.latitude)
+    msg.WGS84_lon = float(gps.longitude)
     the_location = str(gps.longitude)+","+str(gps.latitude)
     #print(type(the_location))
     rospy.loginfo("目前的经纬度%s",str(the_location))
@@ -343,6 +349,9 @@ def callbackGPS(gps):
     f.write(str("--"))
     #将 GCJ02 数据写入文件
     location = convert(gps.longitude,gps.latitude)
+    # 更新 高德坐标
+    msg.GCJ02_lon = float(location.split(',')[0])
+    msg.GCJ02_lat = float(location.split(',')[1])
     f.write(str(location))
 
     f.write("\n")            
@@ -374,8 +383,10 @@ def DegDis():
 
     if net_state == True:   # 网络正常
         msg.net_flag = True
-        longitude=the_location.split(',')[0]
-        latitude=the_location.split(',')[1]
+        # longitude=the_location.split(',')[0]
+        # latitude=the_location.split(',')[1]
+        longitude=msg.WGS84_lon
+        latitude =msg.WGS84_lat
 
         #rospy.loginfo("目标：南山派出所")
         goal_longitude= 106.6024477
