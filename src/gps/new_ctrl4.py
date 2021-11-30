@@ -181,15 +181,15 @@ def route_planning(lon1,lat1,lon2,lat2):
         tmp_num=0
         for i in txt:
             i = i['polyline']
-            info.append(i)
+
             tmp_num = tmp_num+1
             gcj02f.write(str(i))
             
             tmp = i.split(';')
-            # print("下面是tmp-------------")
-            # print (tmp)
+
             print("---------------")
-            # print(len(tmp),"---")
+
+            info_tmp=[] #路径信息临时转换变量
             k=0
             for j in tmp:                
                 # print(j)
@@ -199,6 +199,9 @@ def route_planning(lon1,lat1,lon2,lat2):
                 if k<len(tmp):
                     wgs = wgs + ";"
                 wgs84f.write(str(wgs))
+                info_tmp.append(wgs)
+                
+            info.append[info_tmp]
 
             if(tmp_num < len(txt)):
                 wgs84f.write("\n")  
