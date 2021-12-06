@@ -1,4 +1,6 @@
 #! /bin/bash
+
+# 自动创建gps相关功能包
 echo "删除原来的包"
 rm -rf gps_ws/
 
