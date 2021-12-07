@@ -1,0 +1,6 @@
+KERNEL=="ttyUSB*", KERNELS=="1-2.1", ATTRS{idVendor}=="10c4",ATTRS{idProduct}=="ea60", MODE:="0777",SYMLINK+="DiBan"
+KERNEL=="ttyUSB*", KERNELS=="1-2.3", ATTRS{idVendor}=="10c4",ATTRS{idProduct}=="ea60", MODE:="0777",SYMLINK+="IMU"
+KERNEL=="ttyUSB*", KERNELS=="1-2.2", ATTRS{idVendor}=="10c4",ATTRS{idProduct}=="ea60", MODE:="0777",SYMLINK+="lidar"
+KERNEL=="ttyUSB*", KERNELS=="1-2.3.1", ATTRS{idVendor}=="1a86",ATTRS{idProduct}=="7523", MODE:="0777",SYMLINK+="mag"
+KERNEL=="ttyUSB*", KERNELS=="1-2.4.3", ATTRS{idVendor}=="067b",ATTRS{idProduct}=="2303", MODE:="0777",SYMLINK+="RTK"
+KERNEL=="ttyACM0", ATTRS{idVendor}=="1546",ATTRS{idProduct}=="01a9", MODE:="0777",SYMLINK+="thegps"
