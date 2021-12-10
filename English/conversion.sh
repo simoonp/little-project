@@ -7,15 +7,26 @@ j=0
 shell_save="s"$1
 clear_save="c"$1
 md_save="m"$1
-for i in $(cat $file)
+
+rm $shell_save
+rm $clear_save
+rm $md_save
+
+# # for i in `cat $file`
+# for i in $(cat $file)
+# do
+#     j=$((j+1))
+#     echo $j $i
+# 	# wd $i >> $shell_save
+# done
+#-------------
+cat $file | while read i
 do
     j=$((j+1))
-    echo $j
-    #data=$(wd $i)
+    echo $j $i
 	wd $i >> $shell_save
-	#wd $data >> $shell_save
-    #echo $data
 done
+
 rm mcc
 cp $shell_save $clear_save
 # 以下格式方清除颜色
