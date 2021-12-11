@@ -6,9 +6,10 @@ echo "需要上传的文件是： $@"
 
 git add $@
 
-# echo "添加 commit"
+echo "添加 commit\n"
 
-read -p "添加 commit\n" info
+read info
+# read -p "添加 commit\n" info
 
 git commit -m "$info"
 
