@@ -7,11 +7,14 @@ j=0
 shell_save="s"$1
 clear_save="c"$1
 md_save="m"$1
+eudic_save="e"$1
+eudic_save=${eudic_save/md/txt}
+echo $eudic_save
 
 rm $shell_save
 rm $clear_save
 rm $md_save
-
+rm $eudic_save
 # # for i in `cat $file`
 # for i in $(cat $file)
 # do
@@ -27,6 +30,7 @@ do
 	wd $i >> $shell_save
 done
 
+cat mcc > $eudic_save   # 保存精简版 txt 格式，用于导入欧陆词典
 rm mcc
 cp $shell_save $clear_save
 # 以下格式方清除颜色
