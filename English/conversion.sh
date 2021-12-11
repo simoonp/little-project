@@ -1,4 +1,13 @@
 #!/bin/bash
+
+if [ -n "$1" ]
+then
+    echo "转换的文件是$1"
+else
+    echo "没有输入文件"
+    exit
+fi
+
 sed '/2021/d;/^\s*$/d' $1 > mcc
 #data=$(cat temp)
 file="mcc"
