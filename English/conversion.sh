@@ -18,7 +18,7 @@ clear_save="c"$1
 md_save="m"$1
 eudic_save="e"$1
 eudic_save=${eudic_save/md/txt}
-echo $eudic_save
+# echo $eudic_save
 
 rm $shell_save
 rm $clear_save
@@ -38,6 +38,9 @@ do
     echo $j $i
 	wd $i >> $shell_save
 done
+
+sed -n '/No such/'p $shell_save    #输出没有查到的单词
+sed -i '/No such/d' $shell_save #删除没有查到的单词
 
 cat mcc > $eudic_save   # 保存精简版 txt 格式，用于导入欧陆词典
 rm mcc
