@@ -554,7 +554,6 @@ int main( int argc, char** argv )
 			// path_line_strip_pub.publish(path_line_strip);
 			printf("文本读取完毕\n");
 
-		// printf("文本读取完毕");
 		load_flag++; //加载完成
 		readfile.close();
 		// 	break;
