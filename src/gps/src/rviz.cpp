@@ -26,6 +26,8 @@ using namespace std;
 
 const double PI=3.14159265358979323846264338328;
 
+const float zoom = 1.0;
+
 string frame_id = "/my_frame";	
 double origin_lon=0, origin_lat=0;	//起点经纬度坐标
 int GPS_id = 0;
@@ -52,20 +54,21 @@ void gpsCallback(const mygps::myGPS& gps)
 		return;
 	double lon, lat;	//存储经纬度数据	
 	//更新GPS_marker坐标
-	// GPS_marker.type = visualization_msgs::Marker::SPHERE;
 	GPS_marker.header.stamp = ros::Time::now();
 	GPS_marker.action = visualization_msgs::Marker::ADD;
 	lon=gps_info.WGS84_lon;
 	lat=gps_info.WGS84_lat;
 	ROS_INFO("目标点的经纬度是： %lf , %lf", lon, lat);
-	double x = 0.1*get_distance(lon, lat, origin_lon, origin_lat)*cos(get_degree(lon, lat, origin_lon, origin_lat));
-	double y = 0.1*get_distance(lon, lat, origin_lon, origin_lat)*sin(get_degree(lon, lat, origin_lon, origin_lat));
+	ROS_INFO("当前点距离原点：%lf",get_distance(lon, lat, origin_lon, origin_lat));
+	double x = zoom*get_distance(lon, lat, origin_lon, origin_lat)*cos(get_degree(lon, lat, origin_lon, origin_lat));
+	double y = zoom*get_distance(lon, lat, origin_lon, origin_lat)*sin(get_degree(lon, lat, origin_lon, origin_lat));
 	GPS_marker.pose.position.x = x;
 	GPS_marker.pose.position.y = y;
 	GPS_marker.pose.position.z = 0.4;
 	GPS_marker.color.a = 1.0;
 	GPS_marker_pub.publish(GPS_marker);
 
+	ROS_INFO("两从测量距离%lf", get_distance(lon, lat, gps_info_old.WGS84_lon,gps_info_old.WGS84_lat));
 	//为当前GPS_marker添加序号标记
 	// GPS_text_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
 	GPS_text_marker.header.stamp = ros::Time::now();
@@ -81,7 +84,7 @@ void gpsCallback(const mygps::myGPS& gps)
 
 	//--- 发布前进的方向箭头 start ----
 	float len ;
-	len = gps_info.dis * 0.1;
+	len = gps_info.dis * zoom;
 	geometry_msgs::Point start_p, end_p;
 	GPS_direction_marker.header.stamp = ros::Time::now();
 	GPS_direction_marker.id = GPS_id;
@@ -105,14 +108,14 @@ void gpsCallback(const mygps::myGPS& gps)
 	GPS_pose_marker.id = 0;
 	GPS_pose_marker.action = visualization_msgs::Marker::ADD;
 	GPS_pose_marker.points.clear();
-	len = 1.0;
+	len = 10*zoom;
 	start_p.x = GPS_marker.pose.position.x;
 	start_p.y = GPS_marker.pose.position.y;
 	start_p.z = GPS_marker.pose.position.z;
 	GPS_pose_marker.points.push_back(start_p);
 	printf("IMU的值 ：%d\n",gps_info.compass);
-	end_p.x = start_p.x + gps_info.dis*0.1*cos(gps_info.compass/180.0*PI);
-	end_p.y = start_p.y + gps_info.dis*0.1*len*sin(gps_info.compass/180.0*PI);
+	end_p.x = start_p.x +  len *cos(gps_info.compass/180.0*PI);
+	end_p.y = start_p.y +  len *sin(gps_info.compass/180.0*PI);
 	end_p.z = start_p.z;
 	GPS_pose_marker.points.push_back(end_p);
 	GPS_pose_marker.lifetime = ros::Duration();
@@ -121,24 +124,39 @@ void gpsCallback(const mygps::myGPS& gps)
 
 	//-----------------------
 	//---将上一个位置的Marker变成半透明----start---
+	lon=gps_info_old.WGS84_lon;
+	lat=gps_info_old.WGS84_lat;
+	x = zoom*get_distance(lon, lat, origin_lon, origin_lat)*cos(get_degree(lon, lat, origin_lon, origin_lat));
+	y = zoom*get_distance(lon, lat, origin_lon, origin_lat)*sin(get_degree(lon, lat, origin_lon, origin_lat));
+
 	GPS_marker.header.stamp = ros::Time::now();
 	GPS_marker.id = GPS_id - 1;
 	GPS_marker.action = visualization_msgs::Marker::ADD;
+	GPS_marker.pose.position.x = x;
+	GPS_marker.pose.position.y = y;
 	GPS_marker.color.a = 0.2;
 	GPS_marker_pub.publish(GPS_marker);	
 	//---将上一个位置的Marker变成半透明----end---
 
 	//---将上一个箭头变成半透明 --start ---
-	len = 0.6;
+	len = 6*zoom;
 	GPS_direction_marker.header.stamp = ros::Time::now();
 	GPS_direction_marker.id = GPS_id - 1;
 	GPS_direction_marker.action = visualization_msgs::Marker::ADD;
 	GPS_direction_marker.color.a = 0.5;
+	GPS_direction_marker.points.clear();
+
+	start_p.x = GPS_marker.pose.position.x;
+	start_p.y = GPS_marker.pose.position.y;
+	start_p.z = GPS_marker.pose.position.z;
+	GPS_direction_marker.points.push_back(start_p);
+	end_p.x = start_p.x + len*cos(gps_info_old.deg/180.0*PI);
+	end_p.y = start_p.y + len*sin(gps_info_old.deg/180.0*PI);
+	end_p.z = start_p.z;
+	GPS_direction_marker.points.push_back(end_p);
+	GPS_direction_marker.lifetime = ros::Duration();
 	GPS_marker_pub.publish(GPS_direction_marker);
 	//---将上一个箭头变成半透明 --start ---
-
-
-
 	// printf("%d\n",GPS_id);
 
 }
@@ -208,9 +226,9 @@ int main( int argc, char** argv )
 	GPS_marker.type = visualization_msgs::Marker::SPHERE;
 	GPS_marker.header.frame_id = frame_id;
 	GPS_marker.ns = "GPS_space";
-	GPS_marker.scale.x = 0.05;
-	GPS_marker.scale.y = 0.05;
-	GPS_marker.scale.z = 0.05;
+	GPS_marker.scale.x = 0.5 *zoom;
+	GPS_marker.scale.y = 0.5 *zoom;
+	GPS_marker.scale.z = 0.5 *zoom;
 	GPS_marker.color.r = 255/255.0;
 	GPS_marker.color.g = 165/255.0;
 	GPS_marker.color.b = 0/255.0;
@@ -245,9 +263,9 @@ int main( int argc, char** argv )
 	GPS_direction_marker.color.g = 255/255.0;
 	GPS_direction_marker.color.b = 62/255.0;
 	GPS_direction_marker.color.a = 1.0;
-	GPS_direction_marker.scale.x=0.02;
-	GPS_direction_marker.scale.y=0.05;
-	GPS_direction_marker.scale.z=0.2;
+	GPS_direction_marker.scale.x=0.2 *zoom;
+	GPS_direction_marker.scale.y=0.5*zoom;
+	GPS_direction_marker.scale.z=2*zoom;
 	GPS_direction_marker.lifetime = ros::Duration();
 		//----GPS_direction_marker 初始化-- start-----
 
@@ -258,9 +276,9 @@ int main( int argc, char** argv )
 	GPS_pose_marker.pose.orientation.w = 1.0;
 	GPS_pose_marker.color.b = 1.0;
 	GPS_pose_marker.color.a = 1.0;
-	GPS_pose_marker.scale.x=0.01;
-	GPS_pose_marker.scale.y=0.05;
-	GPS_pose_marker.scale.z=0.2;
+	GPS_pose_marker.scale.x=0.1*zoom;
+	GPS_pose_marker.scale.y=0.5*zoom;
+	GPS_pose_marker.scale.z=2*zoom;
 	GPS_pose_marker.lifetime = ros::Duration();
 		//----GPS_pose_marker 初始化-- end-----
 
@@ -285,11 +303,15 @@ int main( int argc, char** argv )
 
 //--- 文件读取与参数初始化 start ----
 	string file_path;
-	file_path = getenv("HOME") + string("/gps_ws/src/mygps/info/wgs84file.txt");	//getenv("HOME") 获取用户目录
+	// file_path = getenv("HOME") + string("/gps_ws/src/mygps/info/path");	//getenv("HOME") 获取用户目录
+	// file_path = getenv("HOME") + string("/gps_ws/src/mygps/info/aaa");	//getenv("HOME") 获取用户目录
+	file_path = getenv("HOME") + string("/gps_ws/src/mygps/info/p80");	//getenv("HOME") 获取用户目录
+
+
 	// file_path = getenv("HOME") + string("/gps_ws/src/mygps/info/gcj02file.txt");	//getenv("HOME") 获取用户目录
 	ifstream readfile;
 
-	char data[10000];	//存储文本数据
+	char data[1000];	//存储文本数据
 	string datastr;
 	int datalen;	//获取长度，用于剔除时间戳和跳出循环
 	double lon, lat;	//存储经纬度数据
@@ -321,17 +343,20 @@ int main( int argc, char** argv )
 	//-----------------处理整个高德地图数据的经纬度 start------------------
 	
 	int load_flag=1;//全局路径加载标志
+
+	int start_id = 3;
+
 	while(ros::ok()){
 
 		// 等待GPS提供起点位置
-		if (GPS_id < 3)
+		if (GPS_id < start_id)
 		{
-			ROS_INFO("等待GPS提供起点位置--");
+			ROS_INFO("--等待GPS提供起点位置-- %d", GPS_id);
 			ros::spinOnce();
 			r.sleep();
 			continue;
 		}
-		if (GPS_id == 3 && gps_info.plan_flag){
+		if (GPS_id == start_id && gps_info.plan_flag){
 			origin_lon = gps_info.WGS84_lon;
 			origin_lat = gps_info.WGS84_lat;
 			ROS_INFO("设置原点完成");
@@ -365,24 +390,24 @@ int main( int argc, char** argv )
 			end_p.y = 0;
 			end_p.z = 0;
 			if (i==0){
-				end_p.x=1;
+				end_p.x = zoom * 5;
 				pose_marker.color.r=1.0;
 				// printf("-\n");
 			}else if(i==1){
-				end_p.y=1;
+				end_p.y = zoom * 5;
 				pose_marker.color.g=1.0;
 				// printf("--\n");		
 			}else if(i==2){
-				end_p.z=1;
+				end_p.z = zoom * 5;
 				pose_marker.color.b=1.0;
 				// printf("---\n");
 			}
 			pose_marker.color.a=1.0;
 			pose_marker.points.push_back(end_p);
 
-			pose_marker.scale.x=0.1;
-			pose_marker.scale.y=0.2;
-			pose_marker.scale.z=0.1;
+			pose_marker.scale.x=1 * zoom;
+			pose_marker.scale.y=2 * zoom;
+			pose_marker.scale.z=1 * zoom;
 
 			pose_marker.lifetime = ros::Duration();
 			pose_pub.publish(pose_marker);
@@ -399,150 +424,136 @@ int main( int argc, char** argv )
 			}else{
 				printf("正在运行\n");
 				// while (!readfile.eof())	//判断文件是否到结尾
-
+			}
 			int marker_id=0;	
-			// visualization_msgs::Marker path_marker;
-			// path_marker.header.frame_id = frame_id;
-			// path_marker.header.stamp = ros::Time::now();	
 
+			int tmp_i = 0;
+			int tmp_j = 0;
 			while (!readfile.eof())	//判断文件是否到结尾
 			{
-
-				printf("读取新一行\n");
-				// int i = 0, j = 0;
-				// if(readfile.eof()){
-				// 	readfile.close();
-				// 	break;
-				// }
 				readfile >> data;
-				if(data[0] == '-' && data[1] == '-'){
-					readfile.close();
-					break;
-				}
+				tmp_i++;
+				// if(tmp_i%37 == 0){
+				if(1){
+					
+				tmp_j++;
+				cout << "这是 j " << tmp_j << endl;
+				printf("%d \n", tmp_i);
+				printf("读取新一行\n");
+				// readfile >> data;
+
+				cout << "--data: " << data << endl;
+
+
 				datastr=string(data);	//字符数组转换为字符串
-				datalen = datastr.size();
-				// cout << data << endl;
-				if(datalen < 19){
-					cout << data << endl;
-					//continue;	//日期和时间的长度都小于19
-				}
-				else{
-					// tmp_num++;
-					// printf("处理第%d行数据\n",tmp_num);
-					boost::split_regex(lon_lat_list,datastr,boost::regex(";"));	
-					//根据 ; 分割字符，存到lon_lat_list中
+				if(data[0]=='-' && data[1]=='-')
+					break;
+					
 
-					// printf("%ld\n",lon_lat_list.size());
-					for (size_t n = 0; n < lon_lat_list.size(); n++)
-					{	//将lon_lat_list进一步细分
-						boost::split_regex(lon_lat,lon_lat_list[n],boost::regex(","));
+				boost::split_regex(lon_lat,datastr,boost::regex(","));	
 
-						lon = stod(lon_lat[0].c_str());
-						lat = stod(lon_lat[1].c_str());
-						// ROS_INFO("lon:%.10f lat:%.10f", lon, lat);
-						// cout << lon << endl;
-						
-						// 数据处理结束 end------------------------
+	
+				lon = stod(lon_lat[0].c_str());
+				lat = stod(lon_lat[1].c_str());
+				
+				// 数据处理结束 end------------------------
+				printf("分割字符串 lon : %f lat :%f \n 原点：%f %f \n", lon, lat, origin_lon, origin_lat);
+				double x = get_distance(lon, lat, origin_lon, origin_lat)*cos(get_degree(lon, lat, origin_lon, origin_lat));
+				double y = get_distance(lon, lat, origin_lon, origin_lat)*sin(get_degree(lon, lat, origin_lon, origin_lat));
+				printf("%f, %f \n",x, y);
 
-						double x = get_distance(lon, lat, origin_lon, origin_lat)*cos(get_degree(lon, lat, origin_lon, origin_lat));
-						double y = get_distance(lon, lat, origin_lon, origin_lat)*sin(get_degree(lon, lat, origin_lon, origin_lat));
-						//---Marker相关 start-------------
+				//---Marker相关 start-------------
 
-						//---全局路径Marker相关 start-------------
-						visualization_msgs::Marker path_marker;
-						path_marker.header.frame_id = frame_id;
-						path_marker.header.stamp = ros::Time::now();
+				//---全局路径Marker相关 start-------------
+				visualization_msgs::Marker path_marker;
+				path_marker.header.frame_id = frame_id;
+				path_marker.header.stamp = ros::Time::now();
 
-						path_marker.ns = "path_space";
-						marker_id++;
-						path_marker.id = marker_id;
-						// printf("----%d-----\n",path_marker.id);
-						path_marker.type = visualization_msgs::Marker::SPHERE;
-						// if (load_flag==1){
-						// 	path_marker.action = visualization_msgs::Marker::ADD;
-						// 	printf("+");
-						// }
-						path_marker.action = visualization_msgs::Marker::ADD;
-						
-						// path_marker.action = visualization_msgs::Marker::MODIFY;
-						printf("%f, %f \n",x, y);
+				path_marker.ns = "path_space";
+				marker_id++;
+				path_marker.id = marker_id;
+				// printf("----%d-----\n",path_marker.id);
+				path_marker.type = visualization_msgs::Marker::SPHERE;
+				path_marker.action = visualization_msgs::Marker::ADD;
+				
 
-						path_marker.pose.position.x = x/10;
-						path_marker.pose.position.y = y/10;
-						path_marker.pose.position.z = 0;
-						path_marker.pose.orientation.x = 0.0;
-						path_marker.pose.orientation.y = 0.0;
-						path_marker.pose.orientation.z = 0.0;
-						path_marker.pose.orientation.w = 1.0;
+				path_marker.pose.position.x = x * zoom;
+				path_marker.pose.position.y = y * zoom;
+				path_marker.pose.position.z = 0;
+				path_marker.pose.orientation.x = 0.0;
+				path_marker.pose.orientation.y = 0.0;
+				path_marker.pose.orientation.z = 0.0;
+				path_marker.pose.orientation.w = 1.0;
 
-						path_marker.scale.x = 0.3;
-						path_marker.scale.y = 0.3;
-						path_marker.scale.z = 0.30;
+				path_marker.scale.x = 0.3;
+				path_marker.scale.y = 0.3;
+				path_marker.scale.z = 0.30;
 
-						path_marker.color.r = 0.0f;
-						path_marker.color.g = 1.0f;
-						path_marker.color.b = 0.0f;
-						path_marker.color.a = 1.0;
+				path_marker.color.r = 0.0f;
+				path_marker.color.g = 1.0f;
+				path_marker.color.b = 0.0f;
+				path_marker.color.a = 1.0;
 
-						path_marker.lifetime = ros::Duration();
-						if(load_flag == 1)
-							path_point.markers.push_back(path_marker);	
-							//同一个id的Marker重复push会报错“Adding marker 'path_space/1' multiple times. ”
-							// 多次添加标记“path_space/1”。
+				path_marker.lifetime = ros::Duration();
+				if(load_flag == 1)
+					path_point.markers.push_back(path_marker);	
+					//同一个id的Marker重复push会报错“Adding marker 'path_space/1' multiple times. ”
+					// 多次添加标记“path_space/1”。
 
-							// path_point_pub.publish(path_point);
-							//---全局路径Marker相关 end-------------
+				// path_point_pub.publish(path_point);
+					//---全局路径Marker相关 end-------------
 
-							//---Marker文本显示 start-------------
-						visualization_msgs::Marker path_text_marker;
-						path_text_marker.header.frame_id = frame_id;
-						path_text_marker.header.stamp = path_marker.header.stamp;
+					//---Marker文本显示 start-------------
+				visualization_msgs::Marker path_text_marker;
+				path_text_marker.header.frame_id = frame_id;
+				path_text_marker.header.stamp = path_marker.header.stamp;
 
-						path_text_marker.ns = "text_space";
-						path_text_marker.id = marker_id;
+				path_text_marker.ns = "text_space";
+				path_text_marker.id = marker_id;
 
-						path_text_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
-						path_text_marker.action = visualization_msgs::Marker::ADD;
+				path_text_marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+				path_text_marker.action = visualization_msgs::Marker::ADD;
 
-						path_text_marker.pose.position.x = path_marker.pose.position.x;
-						path_text_marker.pose.position.y = path_marker.pose.position.y;
-						path_text_marker.pose.position.z = path_marker.scale.z;
-						path_text_marker.pose.orientation.x = 0.0;
-						path_text_marker.pose.orientation.y = 0.0;
-						path_text_marker.pose.orientation.z = 0.0;
-						path_text_marker.pose.orientation.w = 1.0;					
-						
-						path_text_marker.scale.z = 0.30;	//控制字体大小
-						
-						path_text_marker.color.r = 0.0f;
-						path_text_marker.color.g = 1.0f;
-						path_text_marker.color.b = 1.0f;
-						path_text_marker.color.a = 1.0;
+				path_text_marker.pose.position.x = path_marker.pose.position.x;
+				path_text_marker.pose.position.y = path_marker.pose.position.y;
+				path_text_marker.pose.position.z = path_marker.scale.z;
+				path_text_marker.pose.orientation.x = 0.0;
+				path_text_marker.pose.orientation.y = 0.0;
+				path_text_marker.pose.orientation.z = 0.0;
+				path_text_marker.pose.orientation.w = 1.0;					
+				
+				path_text_marker.scale.z = 0.30;	//控制字体大小
+				
+				path_text_marker.color.r = 0.0f;
+				path_text_marker.color.g = 1.0f;
+				path_text_marker.color.b = 1.0f;
+				path_text_marker.color.a = 1.0;
 
-						ostringstream str;
-						str << marker_id;	//写入文本内容
-						path_text_marker.text=str.str();
+				ostringstream str;
+				str << marker_id;	//写入文本内容
+				path_text_marker.text=str.str();
 
-						path_text_marker.lifetime = ros::Duration();
-						if(load_flag == 1)				
-									path_text.markers.push_back(path_text_marker);
-						//---Marker文本显示 end-------------
+				path_text_marker.lifetime = ros::Duration();
+				if(load_flag == 1)				
+							path_text.markers.push_back(path_text_marker);
+				//---Marker文本显示 end-------------
 
-						//-----全局路径折线段 start ---
-						geometry_msgs::Point p;
-						p.x = path_marker.pose.position.x;
-						p.y = path_marker.pose.position.y;
-						p.z = path_marker.pose.position.z;
-						
-						path_line_strip.points.push_back(p);
-						//-----全局路径折线段 end ---
-						//---Marker相关 end-------------
-					}
-				}
+				//-----全局路径折线段 start ---
+				geometry_msgs::Point p;
+				p.x = path_marker.pose.position.x;
+				p.y = path_marker.pose.position.y;
+				p.z = path_marker.pose.position.z;
+				
+				path_line_strip.points.push_back(p);
+				//-----全局路径折线段 end ---
+				//---Marker相关 end-------------
 			}
+			}
+			// path_text_pub.publish(path_text);
+			// path_point_pub.publish(path_point);
+			// path_line_strip_pub.publish(path_line_strip);
 			printf("文本读取完毕\n");
 
-		}
 		// printf("文本读取完毕");
 		load_flag++; //加载完成
 		readfile.close();
