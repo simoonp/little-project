@@ -8,3 +8,5 @@ float64 GCJ02_lon
 float64 GCJ02_lat
 bool net_flag
 bool plan_flag
+float64[] path_lon
+float64[] path_lat
