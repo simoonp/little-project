@@ -405,5 +405,40 @@ ssh 用户名@IP 命令	# 在远程执行命令，并将命令的执行结果返
 
 ## 6、版本控制(git)
 
+```shell
+# 初始化本地仓库
+git init
 
+# 检查当前git状态
+git status
+
+# 添加说明
+git commit 
+
+# 查看所有提交日志
+git log
+git log --all --graph --decorate
+git log --all --graph --decorate --oneline # 显示更紧凑
+
+# 将文件添加到缓存区
+git add File
+
+# 分支与合并
+git branch	# 查看当前存储库的分支
+git branch name_of_new_branch	# 创建新分支
+git checkout name_of_branch	# 切换到另外一个分支
+git checkout -b name_of_new_branch # 创建分支并切换到该分支
+git merge <revision> # 将指定版本或分支，合并到当前分支
+git mergetool # 使用工具来处理合并冲突
+# 合并时，对于有的数据程序无法给出完美的合并结果，就需要手动合并；手动合并后，要重新git add，然后执行git merge --continue告诉git已经手动完成了合并
+
+# 远程操作
+git remote	# 列出远端
+git remote add name_of_rmeote name_of_url # 添加一个远端, url除了是网上的存储库，还可以是本地文件夹路径
+# git remote add origin path_name 	
+# 远程仓库名字 “origin” 与分支名字 “master” 一样，在 Git 中并没有任何特别的含义一样。 同时 “master” 是当你运行 git init 时默认的起始分支名字，原因仅仅是它的广泛使用， “origin” 是当你运行 git clone 时默认的远程仓库名字。 如果你运行 git clone -o booyah，那么你默认的远程分支名字将会是 booyah/master。
+git push name_of_rmeote local_branch:remote_branch	# j
+```
+
+![image-20220426144944903](C:\Users\MOON\AppData\Roaming\Typora\typora-user-images\image-20220426144944903.png)
 
