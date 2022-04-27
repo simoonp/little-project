@@ -425,20 +425,209 @@ git add File
 
 # 分支与合并
 git branch	# 查看当前存储库的分支
-git branch name_of_new_branch	# 创建新分支
-git checkout name_of_branch	# 切换到另外一个分支
-git checkout -b name_of_new_branch # 创建分支并切换到该分支
+git branch <name_of_new_branch>	# 创建新分支
+git checkout <name_of_branch>	# 切换到另外一个分支
+git checkout -b <name_of_new_branch> # 创建分支并切换到该分支
 git merge <revision> # 将指定版本或分支，合并到当前分支
 git mergetool # 使用工具来处理合并冲突
 # 合并时，对于有的数据程序无法给出完美的合并结果，就需要手动合并；手动合并后，要重新git add，然后执行git merge --continue告诉git已经手动完成了合并
 
 # 远程操作
 git remote	# 列出远端
-git remote add name_of_rmeote name_of_url # 添加一个远端, url除了是网上的存储库，还可以是本地文件夹路径
+git remote add <name_of_rmeote> <name_of_url> # 添加一个远端, url除了是网上的存储库，还可以是本地文件夹路径
 # git remote add origin path_name 	
 # 远程仓库名字 “origin” 与分支名字 “master” 一样，在 Git 中并没有任何特别的含义一样。 同时 “master” 是当你运行 git init 时默认的起始分支名字，原因仅仅是它的广泛使用， “origin” 是当你运行 git clone 时默认的远程仓库名字。 如果你运行 git clone -o booyah，那么你默认的远程分支名字将会是 booyah/master。
-git push name_of_rmeote local_branch:remote_branch	# j
+git push <name_of_rmeote> <local_branch>:<remote_branch>	# 将本地分支推送到远端
+git branch --set-upstream-to=<remote>/<remote branch> # 创建本地和远端分支的关联关系，指定后可以将简化git push指令
+git fetch	# 从远端获取对象/索引， git fetch不会改变本地的内容
+git pull <name_of_rmeote> <remote_branch> # 拉取远端
+git clone # 从远端下载仓库
+
+# 撤销
+git commit --amend # 编辑提交的内容或信息
+git reset HEAD <file> # 恢复暂存的文件
+git checkout -- <file> # 丢弃修改
+
+# 高级操作
+~/.gitconfig # git配置
+git clone --depth=1 # 浅克隆（shallow clone），不包括完整的版本历史信息
+git add -p # 交互式暂存
+git rebase -i # 交互式变基
+git blame [<options>] [<rev-opts>] [<rev>] [--] <file># 查看最后修改某行的人
+git stash # 暂时移除工作目录下的修改内容，恢复到最后一次提交的状态
+git stash pop # 恢复刚刚的移除操作
+git bisect # 通过二分查找搜索历史记录
+.gitignore文件 # 在该文件内添加 指定不需要追踪的文件名
 ```
 
-![image-20220426144944903](C:\Users\MOON\AppData\Roaming\Typora\typora-user-images\image-20220426144944903.png)
+![image-20220426144944903](https://raw.githubusercontent.com/simoonp/upgit_picture/main/2022/04/upgit_20220426_1650957575.png)
+
+绿色是本地分支，红色是远程分支
+
+## 7、调试和分析
+
+### 7.1 调试
+
+`printf`
+
+`log`
+
+`/var/log` Linux系统存放日志的地方
+
+`journalctl`
+
+`pdb` 、`ipdb` python调试工具
+
+```shell
+python -m ipdb name.py
+
+l # (list)列出代码
+s # (step)逐步执行
+c # (continue)
+restart # 复位
+p <变量名>	# 打印变量名
+p local() # 打印目前的变量
+q # (quit) 退出调试
+b <N> # 在第N行设置断点
+```
+
+`gdb` 调试二进制文件(不仅仅是c)
+
+```shell
+```
+
+`pyflakse` 、`mypy`静态分析工具
+
+```shell
+pyflakes name.py
+mypy name.py
+```
+
+一些检查语法错误的插件
+
+`writegoo` 检查英语语法
+
+`Firefox`、`Chrome`调试网页
+
+### 7.2 分析
+
+**分析器**
+
+分析那一段代码最耗资源，然后优先优化这块代码
+
+跟踪分析器、采样分析器
+
+`cProfile` python的分析器
+
+`tac`与`cat`相反，反向输出数据
+
+`memory_profiler` python的内存分析器
+
+`Valgrind` C内存分析器
+
+`perf` 
+
+`FlameGraph` 采样分析器
+
+调用图
+
+`htop` 
+
+`du` 查看文件磁盘占用
+
+`ncdu` 交互式查看文件的磁盘占用
+
+`losf` 查看哪个进程在占用文件
+
+`hyperfine` 比较两个程序的速度
+
+## 8、元编程
+
+`make`
+
+`apt`
+
+软件版本：`主版本号.次版本号.补丁号`。
+
+```
+如果新的版本没有改变 API，请将补丁号递增；
+如果您添加了 API 并且该改动是向后兼容的，请将次版本号递增；
+如果您修改了 API 但是它并不向后兼容，请将主版本号递增。
+```
+
+`测试套件`：所有测试的统称
+
+`单元测试`：一种“微型测试”，用于对某个封装的特性进行测试。
+
+测试单个功能
+
+`集成测试`：一种“宏观测试”，针对系统的某一大部分进行，测试其不同的特性或组件是否能*协同*工作。
+
+`回归测试`：一种实现特定模式的测试，用于保证之前引起问题的 bug 不会再次出现。
+
+`模拟（Mocking）`: 使用一个假的实现来替换函数、模块或类型，屏蔽那些和测试不相关的内容。例如，您可能会“模拟网络连接” 或 “模拟硬盘”。
+
+...
+
+## 9、安全和密码学
+
+## 10、大杂烩
+
+10.1、按键映射
+
+10.2、守护进程
+
+10.3、FUSE(用户空间文件系统)
+
+允许运行在用户空间上的程序实现文件系统调用，并将这些调用与内核接口联系起来
+
+10.4、备份
+
+`复制存储`在同一个磁盘上的数据不是备份，因为这个磁盘是一个单点故障（single point of failure）
+
+推荐的做法是将数据备份到不同的地点存储。
+
+`同步方案`也不是备份。即使方便如 Dropbox 或者 Google Drive，当数据在本地被抹除或者损坏，同步方案可能会把这些“更改”同步到云端。同理，像 RAID 这样的磁盘镜像方案也不是备份。它不能防止文件被意外删除、损坏、或者被勒索软件加密。
+
+`有效备份方案`的几个核心特性是：版本控制，删除重复数据，以及安全性。
+
+10.5、API(应用程序接口)
+
+10.6、常见命令行标志参数及模式
+
+```shell
+--help # 
+
+# 会造成不可撤回操作的工具一般会提供“空运行”（dry run）标志参数，这样用户可以确认工具真实运行时会进行的操作。
+
+--version 或者 -V # 显示它的版本信息
+
+-vvv # 让工具输出更详细的信息（经常用于调试）
+
+--quiet # 抑制除错误提示之外的其他输出。
+
+- # 使用 - 代替输入或者输出文件名意味着工具将从标准输入（standard input）获取所需内容，或者向标准输出（standard output）输出结果。
+
+# 会造成破坏性结果的工具一般默认进行非递归的操作，但是支持使用“递归”（recursive）标志函数（通常是 -r）。
+
+-- # 特殊参数 -- 让某个程序 停止处理 -- 后面出现的标志参数以及选项（以 - 开头的内容）
+```
+
+10.7、窗口管理器
+
+10.8、VPN
+
+10.9、Markdown
+
+10.10、桌面自动化
+
+[Hammerspoon](https://www.hammerspoon.org/) 是面向 macOS 的一个桌面自动化框架。它允许用户编写和操作系统功能挂钩的 Lua 脚本，从而与键盘、鼠标、窗口、文件系统等交互。
+
+10.11、Docker, Vagrant, VMs, Cloud, OpenStack
+
+10.12、交互式记事本编程
+
+10.13、GitHub
+
+## 11、提问&回答
 
