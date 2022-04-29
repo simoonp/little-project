@@ -318,3 +318,4 @@ if __name__ == '__main__':
         DegDis()      
         pub.publish(msg)
         rate.sleep()
+        # get time
