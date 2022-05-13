@@ -110,7 +110,7 @@ source 脚本，脚本中的函数会被加载到当前终端的环境中
 
 ![image-20220422111701318](https://raw.githubusercontent.com/simoonp/upgit_picture/main/2022/04/upgit_20220422_1650597421.png)
 
-`normal` 模式
+### `normal` 模式
 
 ```shell
 x 删除当前光标字符
@@ -176,17 +176,23 @@ V (visual-line)切换到 行visual模式，一次选中一行
 n 匹配下一个
 
 . 重复上一次的操作，insert-操作-esc
+
+<C-w>+方向键 切换窗格
 ```
 
-`insert` 模式
+### `insert` 模式
 
 ```shell
 
 ```
 
+### `visval-black`模式
+```shell
+# 选中后，I 进入编辑模式
+```
 
 
-`command-line` 模式
+### `command-line` 模式
 
 ```shell
 :sp	上下分屏
@@ -197,6 +203,11 @@ n 匹配下一个
 
 :set nu 显示行号
 :行号 跳转到该行
+
+:sp		# 上下分割窗口
+:vsplit	# 左右分割窗口
+
+
 ```
 
 
@@ -336,7 +347,7 @@ Arg：一些参数，可以指定输出文件。
 | <C-b> %         | 向右分割(左右分割)                                           |
 | <C-b>  <方向键> | 切换到指定面板                                               |
 | <C-b> z         | 切换当前面板的缩放(全屏/缩放当前面板)                        |
-| <C-b> [         | 开始往回卷动屏幕。可以按下 <C-空格> 来开始选择，<Alt-w>键复制选中的部分 |
+| <C-b> [         | 开始往回卷动屏幕。可以按下 <C-空格> 来开始选择，<Alt-w>键复制选中的部分（**注：在tmux的配置文件中将该模式配置成vi后，<空格>选中内容，<Enter>滚动模式，详细快捷键参考：https://gist.github.com/ryerh/14b7c24dfd623ef8edc7 **） |
 | <C-b> ]         | 粘贴缓冲区的数据                                             |
 | <C-b> <空格>    | 切换面板布局                                                 |
 | <C-b> x         | 关闭当前面板                                                 |
