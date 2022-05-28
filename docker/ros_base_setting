@@ -40,5 +40,8 @@ RUN echo "export ROS_MASTER_URI=http://192.168.63.129:11311" >> /root/.bashrc
 
 # source ROS空间
 RUN echo "source /opt/ros/melodic/setup.bash" >> /root/.bashrc 
-
+# 测试指令：
+# docker run -it --name ros_test ros_base:1.0
 # --------------------基础配置 End-----------------------
+
+
