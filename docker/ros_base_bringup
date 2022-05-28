@@ -1,0 +1,67 @@
+# ---------------start -------------以下是ROS官方的基本配置，包含基本的ros-core----------------
+# This is an auto generated Dockerfile for ros:ros-base
+# generated from docker_images/create_ros_image.Dockerfile.em
+FROM ros:melodic-ros-core-bionic
+
+# install bootstrap tools
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    build-essential \
+    python-rosdep \
+    python-rosinstall \
+    python-vcstools \
+    && rm -rf /var/lib/apt/lists/*
+
+# bootstrap rosdep
+RUN rosdep init && \
+  rosdep update --rosdistro $ROS_DISTRO
+
+# install ros packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ros-melodic-ros-base=1.4.1-0* \
+    && rm -rf /var/lib/apt/lists/*
+# ---------------end -------------以上是ROS官方的基本配置，包含基本的ros-core----------------
+# ----------------- 以下内容为自己的配置 --------------
+# --------------------基础配置 Start------------------------
+# 安装 ifconfig
+RUN apt-get update
+RUN apt-get -y install net-tools
+
+# 安装ping
+RUN apt-get -y install iputils-ping
+
+# 安装vim
+RUN apt-get install -y vim
+# 切换shell
+SHELL ["/bin/bash", "-c"]
+RUN echo "搜索空间"
+# RUN source /opt/ros/melodic/setup.bash
+# 设置ROS本机IP
+RUN echo "export ROS_HOSTNAME=\`ifconfig eth0 | grep \"inet \"| awk '{print \$2}'\`" >> /root/.bashrc
+# RUN echo "ROS_HOSTNAME=192.168.63.129"  >> /root/.bashrc 
+RUN echo "export ROS_MASTER_URI=http://192.168.63.129:11311" >> /root/.bashrc 
+# RUN echo "export ROS_MASTER_URI=http://\$ROS_HOSTNAME:11311"
+
+# source ROS空间
+RUN echo "source /opt/ros/melodic/setup.bash" >> /root/.bashrc 
+
+# --------------------基础配置 End-----------------------
+
+# -------------------配置底盘 start---------------------
+# 创建工作空间
+RUN mkdir -p /root/catkin_ws/src
+
+# RUN /bin/bash -c 'source /root/.bashrc && cd /root/catkin_ws/ && catkin_make'
+RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws/; echo $(pwd); catkin_make'
+# 拷贝包
+ADD riki_msgs.tar.gz /root/catkin_ws/src
+# 安装相关软件
+RUN apt-get update
+RUN apt install -y ros-melodic-rosserial-python 
+RUN apt install -y ros-melodic-tf ros-melodic-tf2
+# 编译包
+RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws/; echo $(pwd); catkin_make'
+# source 包路径
+RUN echo "source ~/catkin_ws/devel/setup.bash" >> /root/.bashrc
+# 测试指令
+# docker run -it --name ros_bringup --device=/dev/ttyUSB0:/dev/ttyUSB0 -t ros_bringup:1.1
+# -------------------配置底盘 end ----------------------
