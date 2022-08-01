@@ -49,7 +49,7 @@ ffmpeg -r 8 -i out_%d.jpg outc.gif
 ```
 
  -r 8 设置帧率为8帧
- 
+
  %d为通配符，我需要合成的图片有8张
 
  - 提取音频
@@ -64,3 +64,6 @@ $ ffmpeg -i video.mp4 -c:a copy audio.aac
 ```shell
 ffmpeg -i video.mp4 -i audio.wav -c:v copy -c:a aac -strict experimental output.mp4
 ```
+
+- 去除音频，只保留视频
+
