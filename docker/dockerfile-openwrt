@@ -1,0 +1,16 @@
+FROM ubuntu:18.04
+
+RUN apt-get update 
+
+RUN apt-get install sudo -y
+RUN apt-get install make  -y
+
+RUN useradd --create-home --no-log-init --shell /bin/bash docker \
+&& adduser docker sudo \
+&& echo 'docker:123456' | chpasswd
+
+USER docker:docker
+
+CMD /bin/bash
+
+

@@ -1,0 +1,12 @@
+FROM ubuntu:18.04
+
+RUN apt-get update 
+RUN apt-get install sudo
+RUN apt-get install make autoconf automake libtool libtool-bin gcc g++ gperf  flex bison texinfo gawk ncurses-dev libexpat-dev python-dev python python-serial  sed git unzip bash help2man wget bzip2 -y
+RUN useradd --create-home --no-log-init --shell /bin/bash docker \
+&& adduser docker sudo \
+&& echo 'docker:123456' | chpasswd
+
+USER docker:docker
+
+CMD /bin/bash
